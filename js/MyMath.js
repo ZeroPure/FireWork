@@ -145,10 +145,9 @@ const MyMath = (function MyMathFactory(Math) {
 						var i = (y * imageData.width + x) * 4;
 						// 如果像素的alpha值大于0，则表示该像素是图像的一部分
 						if (imageData.data[i + 3] > 0) {
-							//var color = `rgb(${imageData.data[i]}, ${imageData.data[i + 1]}, ${imageData.data[i + 2]})`;
+							var color = `rgb(${imageData.data[i]}, ${imageData.data[i + 1]}, ${imageData.data[i + 2]})`;
 							// 在轮廓数组中创建一个点，并记录坐标
-							//dots.push({x: x, y: y,color: color});
-							dots.push({x: x, y: y});
+							dots.push({x: x, y: y,color: color});
 						}
 					}
 				}

@@ -1323,7 +1323,9 @@ function update(frameTime, lag) {
 					star.sparkTimer -= timeStep;
 					while (star.sparkTimer < 0) {
 						star.sparkTimer += star.sparkFreq * 0.75 + star.sparkFreq * burnRateInverse * 4;
+						//Spark.add(star.x, star.y, star.sparkColor, Math.random() * PI_2, Math.random() * star.sparkSpeed * burnRate, star.sparkLife * 0.8 + Math.random() * star.sparkLifeVariation * star.sparkLife);
 						Spark.add(star.x, star.y, star.sparkColor, Math.random() * PI_2, Math.random() * star.sparkSpeed * burnRate, star.sparkLife * 0.8 + Math.random() * star.sparkLifeVariation * star.sparkLife);
+
 					}
 				}
 
@@ -1799,8 +1801,19 @@ function createWordBurst(wordText, particleFactory, center_x, center_y) {
 		const point = map.points[i];
 		let x = center_x + (point.x - dcenterX);
 		let y = center_y + (point.y - dcenterY);
+		console.log("word color:",color);
 		particleFactory({ x, y }, color, strobed, strobeColor);
 	}
+}
+// 将rgb转换为十六进制颜色格式
+function rgbToHex(rgb) {
+	// 提取数字部分，使用正则表达式匹配数字
+	const result = rgb.match(/\d+/g);
+	if (result && result.length === 3) {
+		// 转换为十六进制并返回格式化后的颜色值
+		return `#${(1 << 24 | (parseInt(result[0]) << 16) | (parseInt(result[1]) << 8) | parseInt(result[2])).toString(16).slice(1).toLowerCase()}`;
+	}
+	return rgb; // 如果不是有效的rgb格式，则返回原值
 }
 
 // 图片烟花
@@ -1810,15 +1823,14 @@ async function createImageBurst(imageURL,particleFactory, center_x, center_y){
 	console.log(map)
 	var dcenterX = map.width / 2;
 	var dcenterY = map.height / 2;
-	var color = randomColor();
-	var strobed = Math.random() < 0.5;
-	var strobeColor = strobed ? randomColor() : color;
+	//var color = randomColor();
 	for (let i = 0; i < map.points.length; i++) {
 		const point = map.points[i];
 		let x = center_x + (point.x - dcenterX);
 		let y = center_y + (point.y - dcenterY);
-		//let color = point.color
-		particleFactory({ x, y }, color, strobed, strobeColor);
+		let color = rgbToHex(point.color);
+		console.log("image color:",color);
+		particleFactory({x, y},color,false,color);
 	}
 }
 
@@ -1882,6 +1894,8 @@ function crackleEffect(star) {
 		);
 	});
 }
+
+
 
 /**
  * 烟花可以用以下选项构建:
@@ -2145,6 +2159,11 @@ class Shell {
 			//文字尾影
 			Spark.add(point.x + 5, point.y + 10, color, Math.random() * 2 * Math.PI, Math.pow(Math.random(), 0.05) * 0.4, this.starLife + Math.random() * this.starLife * this.starLifeVariation + 2000);
 		};
+
+		const dotStarFactory_image = (point) => {
+
+		}
+
 
 		if (typeof this.color === "string") {
 			if (this.color === "random") {
@@ -2422,7 +2441,7 @@ const Spark = {
 
 	add(x, y, color, angle, speed, life) {
 		const instance = this._pool.pop() || this._new();
-
+		console.log("YES");
 		instance.x = x;
 		instance.y = y;
 		instance.prevX = x;
@@ -2431,7 +2450,7 @@ const Spark = {
 		instance.speedX = Math.sin(angle) * speed;
 		instance.speedY = Math.cos(angle) * speed;
 		instance.life = life;
-
+		//console.log("instance:",instance);
 		this.active[color].push(instance);
 		return instance;
 	},
