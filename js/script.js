@@ -85,7 +85,16 @@ randomWords.forEach((word) => {
 });
 
 //图片烟花内容
-const images = [""];
+const imageLength = 331;
+const imagePaths = new Array(imageLength);
+for(let i = 0;i < imageLength;i++){
+	imagePaths[i] = `./resource/${i}.png`;
+}
+// const imageDotsMap = {};
+// imagePaths.forEach(async (path) => {
+// 	imageDotsMap[path] = await MyMath.imageLattice(path,3,200);
+// })
+
 
 
 // 自定义背景
@@ -591,6 +600,10 @@ function randomWord() {
 	return randomWords[(Math.random() * randomWords.length) | 0];
 }
 
+// 随机获取一张图片
+function randomImage() {
+	return imagePaths[(Math.random() * imagePaths.length) | 0]
+}
 function whiteOrGold() {
 	return Math.random() < 0.5 ? COLOR.Gold : COLOR.White;
 }
@@ -1696,11 +1709,6 @@ function createParticleArc(start, arcLength, count, randomness, particleFactory)
 //获取字体点阵信息
 function getWordDots(word) {
 	if (!word) return null;
-	// var res = wordDotsMap[word];
-	// if (!res) {
-	//     wordDotsMap[word] = MyMath.literalLattice(word);
-	//     res = wordDotsMap[word];
-	// }
 
 	//随机字体大小 60~130
 	var fontSize = Math.floor(Math.random() * 70 + 60);
@@ -1709,6 +1717,18 @@ function getWordDots(word) {
 
 	return res;
 }
+
+// 获取图片点阵信息
+async function getImageDots(imageURL){
+	if(!imageURL) return null;
+
+	var size = Math.floor(Math.random() * 100 + 60);
+
+	var res = await MyMath.imageLattice(imageURL,3,size)
+
+	return res;
+}
+
 
 /**
  * 用于创建球形粒子爆发的辅助对象。
@@ -1784,8 +1804,22 @@ function createWordBurst(wordText, particleFactory, center_x, center_y) {
 }
 
 // 图片烟花
-function createImageBurst(imageURL,particleFactory, center_x, center_y){
-
+async function createImageBurst(imageURL,particleFactory, center_x, center_y){
+	//将点阵坐标转换为canvas坐标
+	var map = await getImageDots(imageURL);
+	console.log(map)
+	var dcenterX = map.width / 2;
+	var dcenterY = map.height / 2;
+	var color = randomColor();
+	var strobed = Math.random() < 0.5;
+	var strobeColor = strobed ? randomColor() : color;
+	for (let i = 0; i < map.points.length; i++) {
+		const point = map.points[i];
+		let x = center_x + (point.x - dcenterX);
+		let y = center_y + (point.y - dcenterY);
+		//let color = point.color
+		particleFactory({ x, y }, color, strobed, strobeColor);
+	}
 }
 
 
@@ -2182,7 +2216,8 @@ class Shell {
 			// 		createWordBurst(randomWord(), dotStarFactory, x, y);
 			// 	}
 			// }
-			createWordBurst(randomWord(), dotStarFactory, x, y);
+			//createWordBurst(randomWord(), dotStarFactory, x, y);
+			createImageBurst(randomImage(), dotStarFactory, x, y)
 		}
 
 		if (this.pistil) {

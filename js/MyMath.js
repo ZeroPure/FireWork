@@ -96,7 +96,7 @@ const MyMath = (function MyMathFactory(Math) {
 				// 如果像素的alpha值大于0，则表示该像素是文本的一部分
 				if (imageData.data[i + 3] > 0) {
 					// 在轮廓数组中创建一个点，并记录坐标
-					dots.push({ x: x, y: y });
+					dots.push({x: x, y: y});
 				}
 			}
 		}
@@ -111,6 +111,61 @@ const MyMath = (function MyMathFactory(Math) {
 		};
 	};
 
+	// 图片转点阵
+	MyMath.imageLattice = function imageLattice(imageURL, density = 3, size = 200) {
+		// 创建一个空的点阵数组
+		var dots = [];
+		// 创建一个画布
+		var canvas = document.createElement("canvas");
+		var ctx = canvas.getContext("2d");
+		// 创建一个Image对象
+		var img = new Image();
 
+		// 返回一个 Promise，在图片加载后解析数据
+		return new Promise((resolve, reject) => {
+			img.onload = function () {
+				// 按比例缩放图片
+				var scale = size / Math.max(img.width, img.height);
+				var width = img.width * scale;
+				var height = img.height * scale;
+
+				// 设置画布大小
+				canvas.width = width;
+				canvas.height = height;
+
+				// 绘制图片
+				ctx.drawImage(img, 0, 0, width, height)
+
+				// 获取画布上的像素数据
+				var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+				// 遍历像素数据，将非透明的像素点记录为点阵
+				for (var y = 0; y < imageData.height; y += density) {
+					for (var x = 0; x < imageData.width; x += density) {
+						var i = (y * imageData.width + x) * 4;
+						// 如果像素的alpha值大于0，则表示该像素是图像的一部分
+						if (imageData.data[i + 3] > 0) {
+							//var color = `rgb(${imageData.data[i]}, ${imageData.data[i + 1]}, ${imageData.data[i + 2]})`;
+							// 在轮廓数组中创建一个点，并记录坐标
+							//dots.push({x: x, y: y,color: color});
+							dots.push({x: x, y: y});
+						}
+					}
+				}
+				// 返回包含图像尺寸和点阵信息的对象
+				resolve({
+					width: canvas.width,
+					height: canvas.height,
+					points: dots,
+				});
+			};
+
+			img.onerror = function () {
+				reject(new Error("图片加载失败"));
+			};
+
+			img.src = imageURL;  // 确保图片的URL被设置在事件监听器之前
+		});
+	};
 	return MyMath;
 })(Math);
